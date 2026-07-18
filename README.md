@@ -7,7 +7,7 @@
 <h3 align="center">AI-Powered Job Scam Detection Platform</h3>
 
 <p align="center">
-  <a href="https://your-live-demo-url.com">🌐 Live Demo</a>
+  <a href="https://job-parakh.vercel.app/analyze">🌐 Live Demo</a>
   •
   <a href="https://github.com/mayukh79/Job-Parakh">📂 Repository</a>
 </p>
