@@ -24,7 +24,7 @@ export default function MainLayout({ children }) {
       <footer className="w-full border-t border-steel-border/50 py-10 mt-auto bg-midnight-ink/40">
         <div className="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-caption text-pebble">
           <div>
-            &copy; {new Date().getFullYear()} CareerShield. Job Scam Intelligence Platform.
+            &copy; {new Date().getFullYear()} Job Parakh → Verify Before You Apply. <div> Built by Mayukh</div>
           </div>
           <div className="flex gap-6">
             <a href="#privacy" className="hover:text-moonlight transition-colors duration-150">Privacy Policy</a>

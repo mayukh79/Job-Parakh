@@ -1,8 +1,9 @@
+import api from "../services/api";
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import usePageReveal from '../hooks/usePageReveal';
 
-const signalLabels = ['SOURCE', 'INGEST', 'VERIFY', 'REPORT'];
+const signalLabels = [];
 
 export default function Analyzer() {
     const pageRef = useRef(null);
@@ -15,6 +16,7 @@ export default function Analyzer() {
     const reportCardRef = useRef(null);
     const scoreMeterRef = useRef(null);
     const [inputText, setInputText] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisReport, setAnalysisReport] = useState(null);
 
@@ -34,10 +36,10 @@ export default function Analyzer() {
 
         const context = gsap.context(() => {
             gsap.to(floatingCardsRef.current, {
-                y: -8,
-                delay: 2,
-                duration: 2.8,
-                ease: 'sine.inOut',
+                y: -75,
+                delay: 1,
+                duration: 2,
+                ease: 'power1.inOut',
                 repeat: -1,
                 yoyo: true,
             });
@@ -65,62 +67,72 @@ export default function Analyzer() {
         return () => context.revert();
     }, [analysisReport]);
 
-    const handleAnalyze = (e) => {
-        e.preventDefault();
-        if (!inputText.trim()) return;
+        const handleAnalyze = async(e) => {
+            e.preventDefault();
+            if (!inputText.trim()) return;
 
-        setIsAnalyzing(true);
-        setAnalysisReport(null);
+            setIsAnalyzing(true);
+            setAnalysisReport(null);
+            try {
+        const formData = new FormData();
 
-        // Simulate Job Analysis Engine processing
-        setTimeout(() => {
-            setIsAnalyzing(false);
-            // Determine mock risk level based on keywords
-            const lowerText = inputText.toLowerCase();
-            let riskScore = 32;
-            let indicators = [
-                { type: 'low', text: 'Verified communication channel format' },
-                { type: 'neutral', text: 'Standard interview flow request' }
-            ];
-            let riskLevel = 'Low Risk';
-            let riskColor = 'monad-risk-low';
+if (selectedFile) {
+    formData.append("file", selectedFile);
+} else {
+    formData.append("job_description", inputText);
+}
 
-            if (lowerText.includes('telegram') || lowerText.includes('whatsapp') || lowerText.includes('payment') || lowerText.includes('fee') || lowerText.includes('deposit') || lowerText.includes('training kit') || lowerText.includes('crypto')) {
-                riskScore = 88;
-                riskLevel = 'High Risk';
-                riskColor = 'monad-risk-high';
-                indicators = [
-                    { type: 'high', text: 'Requests off-platform communication (Telegram/WhatsApp)' },
-                    { type: 'high', text: 'Mentions upfront payment for training, software, or kits' },
-                    { type: 'medium', text: 'Vague job description and responsibilities' },
-                    { type: 'medium', text: 'Unprofessional or generic domain sender structure' }
-                ];
-            } else if (lowerText.includes('urgent') || lowerText.includes('immediate start') || lowerText.includes('commission') || lowerText.includes('no experience required')) {
-                riskScore = 58;
-                riskLevel = 'Moderate Risk';
-                riskColor = 'monad-risk-medium';
-                indicators = [
-                    { type: 'medium', text: 'High pressure urgency cues observed ("Immediate start required")' },
-                    { type: 'medium', text: 'Commission-only compensation model with high initial promises' },
-                    { type: 'low', text: 'No background information found for recruiter identity' }
-                ];
-            }
+const response = await api.post(
+    "/analyze/",
+    formData,
+    {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    }
+);
 
-            setAnalysisReport({
-                riskScore,
-                riskLevel,
-                riskColor,
-                indicators,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                charCount: inputText.length
-            });
-        }, 1500);
-    };
+        const data = response.data;
+
+        setAnalysisReport({
+            riskScore: data.risk_score,
+            riskLevel: data.risk_level,
+            reasons: data.reasons,
+             mlPrediction: data.ml_prediction,
+             mlConfidence: data.ml_confidence,
+             aiExplanation: data.ai_explanation,
+             highlightedText: data.highlighted_text,
+             verificationWarnings: data.verification_warnings,
+            indicators: data.reasons.map((reason) => ({
+                type:
+                    data.risk_level === "High"
+                        ? "high"
+                        : data.risk_level === "Medium"
+                        ? "medium"
+                        : "low",
+                text: reason,
+            })),
+            timestamp: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+            }),
+            charCount: inputText.length,
+        });
+    } catch (error) {
+        console.error(error);
+        alert("Failed to analyze job description.");
+    } finally {
+        setIsAnalyzing(false);
+    }
+            
+        };
 
     const handleReset = () => {
-        setInputText('');
-        setAnalysisReport(null);
-    };
+    setInputText("");
+    setSelectedFile(null);
+    setAnalysisReport(null);
+};
 
     const renderIndicatorMark = (type) => {
         if (type === 'high') return '!';
@@ -142,16 +154,16 @@ export default function Analyzer() {
                     Analyze job descriptions, recruiter messages, and internship offers for scam indicators.
                 </p>
 
-                <div ref={floatingCardsRef} className="monad-flow floating-card" aria-hidden="true">
-                    <div className="monad-flow-column">
-                        <span className="monad-tag">JOB POST</span>
-                        <span className="monad-tag">EMAIL OFFER</span>
-                        <span className="monad-tag">RECRUITER DM</span>
-                    </div>
-                    <div className="monad-flow-center">
-                        <div className="monad-orbit">
-                            <div className="monad-node">CS</div>
-                        </div>
+                <div
+    ref={floatingCardsRef}
+    className="monad-flow floating-card flex justify-center items-center w-full"
+    aria-hidden="true"
+>
+
+    <div className="monad-flow-center mx-auto">
+        <div className="monad-orbit">
+            <div className="monad-node">JP</div>
+        </div>
                         <div className="monad-status-row">
                             {signalLabels.map((label) => (
                                 <span key={label} className="monad-status">
@@ -161,11 +173,7 @@ export default function Analyzer() {
                             ))}
                         </div>
                     </div>
-                    <div className="monad-flow-column">
-                        <span className="monad-tag">RISK SCORE</span>
-                        <span className="monad-tag">SIGNALS</span>
-                        <span className="monad-tag">NEXT STEP</span>
-                    </div>
+                    
                 </div>
             </section>
 
@@ -189,6 +197,25 @@ export default function Analyzer() {
                             className="monad-textarea"
                             disabled={isAnalyzing}
                         />
+                        <div className="mt-4">
+                            <label htmlFor="file-upload" className="block text-sm text-gray-500 mb-2">
+                                Or upload a file (TXT, PDF, DOCX)
+                            </label>
+                            <input
+                                type="file"
+                                id="file-upload"
+                                accept=".txt,.pdf,.docx"
+                                onChange={(e) => setSelectedFile(e.target.files[0])}
+                                disabled={isAnalyzing}
+                                className="block w-full text-sm"
+  />
+  {selectedFile && (
+    <p className="mt-2 text-sm text-gray-500">
+        Selected: <strong>{selectedFile.name}</strong>
+    </p>
+)}
+  
+</div>
 
                         <div className="monad-actions">
                             <span className="monad-count">{inputText.length} characters</span>
@@ -204,7 +231,10 @@ export default function Analyzer() {
                                 )}
                                 <button
                                     type="submit"
-                                    disabled={isAnalyzing || !inputText.trim()}
+                                   disabled={
+                                        isAnalyzing ||
+                                        (!selectedFile && !inputText.trim())
+                                    }
                                     className="monad-button monad-button-filled"
                                 >
                                     {isAnalyzing ? (
@@ -252,6 +282,60 @@ export default function Analyzer() {
                                     <strong className={analysisReport.riskColor}>
                                         {analysisReport.riskLevel} ({analysisReport.riskScore}%)
                                     </strong>
+                                    <div className="mt-4 p-4 border rounded-lg">
+  <h3 className="font-semibold mb-2">AI Analysis</h3>
+
+  <p>
+    <strong>Prediction:</strong> {analysisReport.mlPrediction}
+  </p>
+
+  <p>
+    <strong>Confidence:</strong> {analysisReport.mlConfidence}%
+  </p>
+</div>
+<div className="mt-4 rounded-xl border p-4">
+    <h3 className="mb-3 text-xl font-semibold">
+        Highlighted Job Description
+    </h3>
+
+    <div
+        className="prose max-w-none whitespace-pre-wrap"
+        dangerouslySetInnerHTML={{
+            __html: analysisReport.highlightedText,
+        }}
+    />
+</div>
+<div className="mt-4 rounded-xl border border-gray-300 bg-white/30 p-4">
+    <h3 className="mb-3 text-xl font-semibold">
+        AI Explanation
+    </h3>
+
+    <div className="max-h-72 overflow-y-auto">
+        <p className="whitespace-pre-line text-sm leading-7">
+            {analysisReport.aiExplanation}
+        </p>
+    </div>
+</div>
+{analysisReport.verificationWarnings?.length > 0 && (
+    <div className="mt-4 rounded-xl border border-red-300 bg-red-50/40 p-4">
+        <h3 className="mb-3 text-xl font-semibold text-red-700">
+            Source Verification
+        </h3>
+
+        <div className="space-y-3">
+            {analysisReport.verificationWarnings.map((warning, index) => (
+                <div
+                    key={index}
+                    className="rounded-lg border border-red-200 bg-white/60 p-3"
+                >
+                    <p className="text-sm">
+                        ⚠ {warning}
+                    </p>
+                </div>
+            ))}
+        </div>
+    </div>
+)}
                                     <div
                                         className="monad-score-meter"
                                         role="meter"
