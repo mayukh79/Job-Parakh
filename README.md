@@ -1,7 +1,7 @@
 # Job Parakh
 
 <p align="center">
-  <img src="assests/banner.png" alt="Job Parakh Banner" width="100%">
+  <img src="frontend/assests/banner.png" alt="Job Parakh Banner" width="100%">
 </p>
 
 <h3 align="center">AI-Powered Job Scam Detection Platform</h3>
