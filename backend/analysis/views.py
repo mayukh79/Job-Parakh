@@ -24,125 +24,117 @@ from .risk_rules import (
 
 @api_view(['POST'])
 def analyze_job(request):
-    uploaded_file = request.FILES.get("file")
+    try:
+        uploaded_file = request.FILES.get("file")
 
-    if uploaded_file:
-        text = extract_text(uploaded_file).lower()
-    else:
-        text = request.data.get("job_description", "").lower()
-    if not text.strip():
-        return Response(
-        {
-            "error": "No text could be extracted from the uploaded file."
-        },
-        status=400,)
-    ml_result = predict_job(text)
-    verification_warnings = verify_source(text)
-    matched_rules = []
-
-    for rule in RULES:
-
-        if rule["keyword"] in text:
-
-            matched_rules.append({
-                "keyword": rule["keyword"],
-                "weight": rule["weight"],
-                "category": rule["category"]
-        })
-
-    score = 0
-    reasons = []
-    indicators_found = 0
-    financial_count=0
-    pressure_count=0
-    contact_count=0
-
-    for keyword, weight in SUSPICIOUS_KEYWORDS.items():
-
-        if keyword in text:
-
-            indicators_found += 1
-            score += weight
-
-            if keyword in FINANCIAL_SCAM_KEYWORDS:
-                financial_count += 1
-
-            if keyword in PRESSURE_TACTIC_KEYWORDS:
-                pressure_count += 1
-
-            reasons.append(
-                f"Suspicious keyword found: {keyword} (+{weight})"
-            )
-
-    for pattern, weight in SUSPICIOUS_CONTACT_PATTERNS.items():
-
-        if pattern in text:
-
-            indicators_found += 1
-            score += weight
-            contact_count += 1
-
-            reasons.append(
-                f"Suspicious contact pattern: {pattern} (+{weight})"
-            )
-
-        if score == 0:
-            reasons.append("No suspicious patterns detected")
-
-        rule_score = score
-
-        if ml_result["prediction"] == 1:
-           score = int(rule_score * 0.7 + ml_result["confidence"] * 0.3)
-        
+        if uploaded_file:
+            text = extract_text(uploaded_file).lower()
         else:
-          score = rule_score
-
-        score = min(score, 100)
-
-        if score >= 70:
-            level = "High"
-        elif score >= 40:
-            level = "Medium"
-        else:
-            level = "Low"
-
-        JobAnalysis.objects.create(
-            job_description=text,
-            risk_score=score,
-            risk_level=level
-        )
-        explanation = generate_explanation(reasons, level)
-        highlighted_text = text
-
-    for keyword in SUSPICIOUS_KEYWORDS:
-      highlighted_text = highlighted_text.replace(
-        keyword,
-        f"<mark>{keyword}</mark>"
-    )
-
-    for pattern in SUSPICIOUS_CONTACT_PATTERNS:
-      highlighted_text = highlighted_text.replace(
-        pattern,
-        f"<mark>{pattern}</mark>"
-    )
-    return Response({
-            "risk_score": score,
-            "risk_level": level,
-            "ml_prediction": "Fake" if ml_result["prediction"] == 1 else "Legitimate",
-            "ml_confidence": ml_result["confidence"],
-            "verification_warnings": verification_warnings,
-            "ai_explanation": explanation,
-            "indicators_found": indicators_found,
-            "matched_rules": matched_rules,
-            "highlighted_text": highlighted_text,
-            "analysis_summary": f"{indicators_found} suspicious indicator(s) detected.",
-            "category_breakdown": {
-                "financial_scam_indicators": financial_count,
-                "pressure_tactics": pressure_count,
-                "suspicious_contact_methods": contact_count
+            text = request.data.get("job_description", "").lower()
+        if not text.strip():
+            return Response(
+            {
+                "error": "No text could be extracted from the uploaded file."
             },
-            "reasons": reasons
-        })
+            status=400,)
+        ml_result = predict_job(text)
+        verification_warnings = verify_source(text)
+        matched_rules = []
+
+        for rule in RULES:
+
+            if rule["keyword"] in text:
+
+                matched_rules.append({
+                    "keyword": rule["keyword"],
+                    "weight": rule["weight"],
+                    "category": rule["category"]
+            })
+
+        score = 0
+        reasons = []
+        indicators_found = 0
+        financial_count=0
+        pressure_count=0
+        contact_count=0
+
+        for keyword, weight in SUSPICIOUS_KEYWORDS.items():
+
+            if keyword in text:
+
+                indicators_found += 1
+                score += weight
+
+                if keyword in FINANCIAL_SCAM_KEYWORDS:
+                    financial_count += 1
+
+                if keyword in PRESSURE_TACTIC_KEYWORDS:
+                    pressure_count += 1
+
+                reasons.append(
+                    f"Suspicious keyword found: {keyword} (+{weight})"
+                )
+
+        for pattern, weight in SUSPICIOUS_CONTACT_PATTERNS.items():
+
+            if pattern in text:
+
+                indicators_found += 1
+                score += weight
+                contact_count += 1
+
+                reasons.append(
+                    f"Suspicious contact pattern: {pattern} (+{weight})"
+                )
+
+            if score == 0:
+                reasons.append("No suspicious patterns detected")
+
+            rule_score = score
+
+            if ml_result["prediction"] == 1:
+              score = int(rule_score * 0.7 + ml_result["confidence"] * 0.3)
+            
+            else:
+              score = rule_score
+
+            score = min(score, 100)
+
+            if score >= 70:
+                level = "High"
+            elif score >= 40:
+                level = "Medium"
+            else:
+                level = "Low"
+
+            JobAnalysis.objects.create(
+                job_description=text,
+                risk_score=score,
+                risk_level=level
+            )
+            explanation = generate_explanation(reasons, level)
+            highlighted_text = text
+
+        for keyword in SUSPICIOUS_KEYWORDS:
+             highlighted_text = highlighted_text.replace(
+            keyword,
+            f"<mark>{keyword}</mark>"
+        )
+
+        for pattern in SUSPICIOUS_CONTACT_PATTERNS:
+            highlighted_text = highlighted_text.replace(
+            pattern,
+            f"<mark>{pattern}</mark>"
+        )
+    except Exception as e:
+        traceback.print_exc()
+        return Response(
+            {
+                "error": str(e),
+                "type": type(e).__name__,
+            },
+            status=500,
+        )
 
 @api_view(["GET"])
 def analysis_history(request):
