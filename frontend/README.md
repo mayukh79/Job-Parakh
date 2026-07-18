@@ -4,20 +4,28 @@
   <img src="assets/banner.png" alt="Job Parakh Banner" width="100%">
 </p>
 
-<p align="center">
-  <strong>AI-Powered Job Scam Detection Platform</strong>
-</p>
+<h3 align="center">AI-Powered Job Scam Detection Platform</h3>
 
 <p align="center">
-  <a href="https://your-live-demo-url.com" target="_blank">
-    🌐 Live Demo
-  </a>
+  <a href="https://your-live-demo-url.com">🌐 Live Demo</a>
   •
-  <a href="https://github.com/mayukh79/Job-Parakh" target="_blank">
-    📂 Repository
-  </a>
+  <a href="https://github.com/mayukh79/Job-Parakh">📂 Repository</a>
 </p>
 
 ---
 
-Job Parakh is an AI-powered platform that detects potentially fraudulent job postings using Machine Learning and rule-based analysis, helping users verify opportunities before applying.
+## About
+
+**Job Parakh** is an AI-powered web application designed to help job seekers identify potentially fraudulent job postings before applying. It combines Machine Learning with rule-based analysis to evaluate job descriptions, detect common scam patterns, and generate a comprehensive risk assessment.
+
+The platform highlights suspicious indicators such as upfront payment requests, unrealistic salary offers, urgent hiring tactics, and other deceptive recruitment practices. By providing a scam risk score along with clear explanations, Job Parakh enables users to make safer and more informed career decisions.
+
+### Key Features
+
+- AI-powered job scam detection
+- Machine Learning–based prediction model
+- Rule-based scam analysis
+- Risk score with detailed explanations
+- Modern and responsive React interface
+- Django REST Framework backend
+- Fast, real-time analysis
