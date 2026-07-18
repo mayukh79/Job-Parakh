@@ -87,33 +87,33 @@ def analyze_job(request):
                     f"Suspicious contact pattern: {pattern} (+{weight})"
                 )
 
-            if score == 0:
+        if score == 0:
                 reasons.append("No suspicious patterns detected")
 
-            rule_score = score
+        rule_score = score
 
-            if ml_result["prediction"] == 1:
+        if ml_result["prediction"] == 1:
               score = int(rule_score * 0.7 + ml_result["confidence"] * 0.3)
             
-            else:
+        else:
               score = rule_score
 
-            score = min(score, 100)
+        score = min(score, 100)
 
-            if score >= 70:
+        if score >= 70:
                 level = "High"
-            elif score >= 40:
+        elif score >= 40:
                 level = "Medium"
-            else:
+        else:
                 level = "Low"
 
-            JobAnalysis.objects.create(
+        JobAnalysis.objects.create(
                 job_description=text,
                 risk_score=score,
                 risk_level=level
             )
-            explanation = generate_explanation(reasons, level)
-            highlighted_text = text
+        explanation = generate_explanation(reasons, level)
+        highlighted_text = text
 
         for keyword in SUSPICIOUS_KEYWORDS:
              highlighted_text = highlighted_text.replace(
@@ -126,6 +126,22 @@ def analyze_job(request):
             pattern,
             f"<mark>{pattern}</mark>"
         )
+        return Response({
+    "risk_score": score,
+    "risk_level": level,
+    "reasons": reasons,
+    "matched_rules": matched_rules,
+    "ml_prediction": ml_result,
+    "verification_warnings": verification_warnings,
+    "explanation": explanation,
+    "highlighted_text": highlighted_text,
+    "statistics": {
+        "indicators_found": indicators_found,
+        "financial": financial_count,
+        "pressure": pressure_count,
+        "contact": contact_count,
+    }
+})
     except Exception as e:
         traceback.print_exc()
         return Response(
