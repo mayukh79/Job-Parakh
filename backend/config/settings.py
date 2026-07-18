@@ -23,10 +23,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-mzbc_#c(a1#k@_tr0x7y7e#&3e2*($961prumz2f+38&__jk+^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["https://job-parakh-did9.onrender.com"]
-
+ALLOWED_HOSTS = [
+    "job-parakh-did9.onrender.com",
+    "job-parakh.vercel.app",
+    "localhost",
+    "127.0.0.1",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://job-parakh.vercel.app",
+]
 
 # Application definition
 
