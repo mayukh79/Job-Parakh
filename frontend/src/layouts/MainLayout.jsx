@@ -26,11 +26,7 @@ export default function MainLayout({ children }) {
           <div>
             &copy; {new Date().getFullYear()} Job Parakh → Verify Before You Apply. <div> Built by Mayukh</div>
           </div>
-          <div className="flex gap-6">
-            <a href="#privacy" className="hover:text-moonlight transition-colors duration-150">Privacy Policy</a>
-            <a href="#terms" className="hover:text-moonlight transition-colors duration-150">Terms of Service</a>
-            <a href="#contact" className="hover:text-moonlight transition-colors duration-150">Contact Support</a>
-          </div>
+          
         </div>
       </footer>
     </div>
