@@ -9,7 +9,6 @@ from ml.predict import predict_job
 from .explainer import generate_explanation
 from .verifier import verify_source
 from django.db.models import Count, Avg
-import traceback
 # pyrefly: ignore [missing-import]
 from django.shortcuts import get_object_or_404
 
@@ -24,7 +23,6 @@ from .risk_rules import (
 
 @api_view(['POST'])
 def analyze_job(request):
-    try:
         uploaded_file = request.FILES.get("file")
 
         if uploaded_file:
@@ -142,31 +140,14 @@ def analyze_job(request):
         "contact": contact_count,
     }
 })
-    except Exception as e:
-        traceback.print_exc()
-        return Response(
-            {
-                "error": str(e),
-                "type": type(e).__name__,
-            },
-            status=500,
-        )
+   
 
 @api_view(["GET"])
 def analysis_history(request):
-    try:
         analyses = JobAnalysis.objects.all().order_by("-created_at")
         serializer = JobAnalysisSerializer(analyses, many=True)
         return Response(serializer.data)
-    except Exception as e:
-        traceback.print_exc()
-        return Response(
-            {
-                "error": str(e),
-                "type": type(e).__name__,
-            },
-            status=500,
-        )
+  
 
 @api_view(['GET', 'DELETE'])
 def analysis_detail(request, analysis_id):
