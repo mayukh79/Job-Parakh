@@ -98,11 +98,11 @@ const response = await api.post(
             riskScore: data.risk_score,
             riskLevel: data.risk_level,
             reasons: data.reasons,
-             mlPrediction: data.ml_prediction,
-             mlConfidence: data.ml_confidence,
-             aiExplanation: data.ai_explanation,
-             highlightedText: data.highlighted_text,
-             verificationWarnings: data.verification_warnings,
+            mlPrediction: data.ml_prediction.prediction,
+            mlConfidence: data.ml_prediction.confidence,
+            aiExplanation: data.ai_explanation,
+            highlightedText: data.highlighted_text,
+            verificationWarnings: data.verification_warnings,
             indicators: data.reasons.map((reason) => ({
                 type:
                     data.risk_level === "High"
